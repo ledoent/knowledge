@@ -4,7 +4,7 @@
 {
     "name": "Preview attachments",
     "version": "19.0.1.0.0",
-    "author": "Therp BV,Onestein,Odoo Community Association (OCA)",
+    "author": "Therp BV, Onestein, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/knowledge",
     "license": "AGPL-3",
     "summary": "Preview attachments supported by Viewer.js",
