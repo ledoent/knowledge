@@ -1,40 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
+    <!--
+      Odoo 19 restructured mail.AttachmentList. The o-mail-AttachmentCard-aside
+      element this template used to extend no longer exists, so the xpath could
+      not resolve and the whole chatter failed to render on any record carrying
+      an attachment. Server-side tests do not render the OWL template, which is
+      why CI stayed green.
+
+      The per-attachment actions now live in the o-mail-AttachmentButtons hover
+      group next to Download and Remove, so add the preview buttons there and
+      match the styling of their siblings.
+    -->
     <t t-name="Attachment" t-inherit="mail.AttachmentList" t-inherit-mode="extension">
-        <xpath expr="//div[hasclass('o-mail-AttachmentCard-aside')]" position="before">
-            <div
-                t-if="attachment.downloadUrl"
-                class="o-mail-AttachmentCard-aside position-relative rounded-end overflow-hidden d-flex"
-                t-att-class="{ 'o-hasMultipleActions d-flex flex-column': showDelete and !env.inComposer }"
+        <xpath expr="//div[hasclass('o-mail-AttachmentButtons')]" position="inside">
+            <button
+                t-if="this._canPreviewAttachment(attachment)"
+                class="btn bg-500 w-100 h-100 o-p-1_5 d-flex justify-content-center align-items-center shadow-sm"
+                t-att-data-id="attachment.id"
+                t-att-data-url="attachment.defaultSource"
+                t-on-click.stop="() => this._onPreviewAttachment(attachment)"
+                t-att-data-original-title="attachment.name"
+                t-attf-title="Preview {{attachment.name}} in side panel"
             >
-                <button
-                    t-if="this._canPreviewAttachment(attachment)"
-                    class="d-flex justify-content-center align-items-center w-100 h-100 border-0 bg-300"
-                    t-att-data-id="attachment.id"
-                    t-att-data-url="attachment.defaultSource"
-                    t-on-click.stop="() => this._onPreviewAttachment(attachment)"
-                    t-att-data-original-title="attachment.name"
-                    t-attf-title="Preview {{attachment.displayName}} in side panel"
-                >
-                    <i class="fa fa-search" role="img" aria-label="Preview" />
-                </button>
-                <button
-                    t-if="this._canPreviewAttachment(attachment)"
-                    class="d-flex justify-content-center align-items-center w-100 h-100 border-0 bg-300"
-                    data-target="new"
-                    t-att-data-id="attachment.id"
-                    t-att-data-url="attachment.defaultSource"
-                    t-on-click.stop="() => this._onPreviewAttachment(attachment)"
-                    t-att-data-original-title="attachment.name"
-                    t-attf-title="Open preview {{attachment.name}} in a new tab"
-                >
-                    <i
-                        class="fa fa-external-link"
-                        role="img"
-                        aria-label="Open in new page"
-                    />
-                </button>
-            </div>
+                <i class="fa fa-search o-text-white" role="img" aria-label="Preview" />
+            </button>
+            <button
+                t-if="this._canPreviewAttachment(attachment)"
+                class="btn bg-500 w-100 h-100 o-p-1_5 d-flex justify-content-center align-items-center shadow-sm"
+                data-target="new"
+                t-att-data-id="attachment.id"
+                t-att-data-url="attachment.defaultSource"
+                t-on-click.stop="() => this._onPreviewAttachment(attachment)"
+                t-att-data-original-title="attachment.name"
+                t-attf-title="Open preview {{attachment.name}} in a new tab"
+            >
+                <i
+                    class="fa fa-external-link o-text-white"
+                    role="img"
+                    aria-label="Open in new page"
+                />
+            </button>
         </xpath>
     </t>
 
