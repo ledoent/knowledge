@@ -6,6 +6,10 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestDesguaceparisCustom(BaseCommon):
+    # 20.0's BaseCommon runs as an independent `base.group_user`, and document_page
+    # grants that level read-only, so editing a page needs the editor group stated.
+    _test_user_groups = ("base.group_user", "document_page.group_document_editor")
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
