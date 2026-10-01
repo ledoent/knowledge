@@ -4,7 +4,7 @@
 {
     "name": "Document Page Project Task",
     "summary": "This module links document pages to project tasks",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Project",
     "author": "Escodoo, Odoo Community Association (OCA)",
     "maintainers": ["marcelsavegnago"],
