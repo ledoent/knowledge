@@ -18,11 +18,16 @@
                 class="btn bg-500 w-100 h-100 o-p-1_5 d-flex justify-content-center align-items-center shadow-sm"
                 t-att-data-id="attachment.id"
                 t-att-data-url="attachment.defaultSource"
-                t-on-click.stop="() => this._onPreviewAttachment(attachment)"
+                t-on-click.stop="(ev) => this._onPreviewAttachment(attachment, ev)"
                 t-att-data-original-title="attachment.name"
                 t-attf-title="Preview {{attachment.name}} in side panel"
             >
-                <i class="fa fa-search o-text-white" role="img" aria-label="Preview" />
+                <i
+                    class="oi o-text-white"
+                    data-icon="search"
+                    role="img"
+                    aria-label="Preview"
+                />
             </button>
             <button
                 t-if="this._canPreviewAttachment(attachment)"
@@ -30,12 +35,13 @@
                 data-target="new"
                 t-att-data-id="attachment.id"
                 t-att-data-url="attachment.defaultSource"
-                t-on-click.stop="() => this._onPreviewAttachment(attachment)"
+                t-on-click.stop="(ev) => this._onPreviewAttachment(attachment, ev)"
                 t-att-data-original-title="attachment.name"
                 t-attf-title="Open preview {{attachment.name}} in a new tab"
             >
                 <i
-                    class="fa fa-external-link o-text-white"
+                    class="oi o-text-white"
+                    data-icon="open_in_new"
                     role="img"
                     aria-label="Open in new page"
                 />
@@ -49,35 +55,35 @@
                 <div class="button-group pull-left">
                     <button
                         class="btn btn-sm btn-secondary attachment_preview_previous"
-                        t-on-click="_onPreviousClick"
+                        t-on-click="this._onPreviousClick"
                     >
-                        <i class="fa fa-chevron-left" />
+                        <i class="oi" data-icon="chevron_backward" />
                     </button>
                     <button
                         class="btn btn-sm btn-secondary disabled attachment_preview_current"
-                        t-ref="current"
+                        t-ref="this.currentRef"
                     >1 / 5</button>
                     <button
                         class="btn btn-sm btn-secondary attachment_preview_next"
-                        t-on-click="_onNextClick"
+                        t-on-click="this._onNextClick"
                     >
-                        <i class="fa fa-chevron-right" />
+                        <i class="oi" data-icon="chevron_forward" />
                     </button>
                 </div>
                 <button
                     class="btn btn-sm btn-secondary pull-left ml8 attachment_preview_popout"
-                    t-on-click="_onPopoutClick"
+                    t-on-click="this._onPopoutClick"
                 >
-                    <i class="fa fa-external-link" />
+                    <i class="oi" data-icon="open_in_new" />
                 </button>
                 <button
                     class="btn btn-sm btn-secondary pull-right attachment_preview_close"
-                    t-on-click="_onCloseClick"
+                    t-on-click="this._onCloseClick"
                 >
-                    <i class="fa fa-times" />
+                    <i class="oi" data-icon="close" />
                 </button>
             </div>
-            <iframe class="attachment_preview_iframe" t-ref="iframe" />
+            <iframe class="attachment_preview_iframe" t-ref="this.iframeRef" />
         </div>
     </t>
 </templates>

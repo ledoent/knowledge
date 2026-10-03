@@ -1,6 +1,7 @@
 # Copyright 2014 Therp BV (<http://therp.nl>)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import base64
 import collections
 import logging
 import mimetypes
@@ -43,6 +44,26 @@ class IrAttachment(models.Model):
         for this in self.env[model].with_context(bin_size=True).browse(ids_to_browse):
             result[this.id] = False
             mimetype = False
+            # 20.0 hands Binary fields over as a BinaryValue holding the RAW
+            # bytes, where 19.0 gave base64-encoded bytes. bytes() unwraps it and
+            # leaves a plain bytes value alone, so both the sniffing below and
+            # the data-URL fallback get what they expect.
+            try:
+                raw = this[binary_field]
+            except Exception:
+                # Anything the caller passed that is not a readable binary field
+                # -- a name the model does not have, or None. The field name
+                # comes from the caller, so this is reachable.
+                raw = None
+            content = bytes(raw) if raw else b""
+            if not content:
+                # Nothing to sniff. 19.0 never got here: reading a bad field, or
+                # calling .decode() on an empty one, raised inside the try below
+                # and left the result falsy. Sniffing an empty buffer instead is
+                # not equivalent and is not even stable -- libmagic calls b"" an
+                # empty file locally and text/plain on the CI image, which is a
+                # test that passes on one machine and fails on the other.
+                continue
             try:
                 import magic
 
@@ -53,12 +74,14 @@ class IrAttachment(models.Model):
                         this._full_path(this.store_fname), mime=True
                     )
                 else:  # pragma: no cover
-                    mimetype = magic.from_buffer(this[binary_field], mime=True)
+                    mimetype = magic.from_buffer(content, mime=True)
                     _logger.debug("Magic determined mimetype %s from buffer", mimetype)
             except (ImportError, Exception):
                 try:
+                    # Re-encoded rather than decoded: the field no longer carries
+                    # base64, so this keeps the data URL the same shape 19.0 built.
                     (mimetype, encoding) = mimetypes.guess_type(
-                        "data:;base64," + this[binary_field].decode("utf-8"),
+                        "data:;base64," + base64.b64encode(content).decode("utf-8"),
                         strict=False,
                     )
                 except Exception as e:
@@ -74,15 +97,20 @@ class IrAttachment(models.Model):
 
     @api.model
     def get_attachment_extension(self, ids):
-        return self.get_binary_extension(self._name, ids, "datas", "name")
+        return self.get_binary_extension(self._name, ids, "raw", "name")
 
-    def _to_store_defaults(self, target):
-        """Adds extension in Store defaults for attachments"""
-        defaults = super()._to_store_defaults(target)
-        defaults.append(
-            Store.Attr(
-                "extension",
-                lambda a: a.get_attachment_extension(a.id),
-            )
-        )
-        return defaults
+    # pylint: disable=missing-return
+    # The hook mutates the FieldList it is handed and returns nothing -- core's
+    # own _store_attachment_fields and the discuss override both do the same, so
+    # there is no value to propagate from super().
+    def _store_attachment_fields(self, res: Store.FieldList, **kwargs):
+        """Adds extension to the attachment fields sent to the client.
+
+        20.0 renamed the hook from _to_store_defaults and changed its shape: it
+        now receives a Store.FieldList to append to instead of returning a list,
+        and Store.add only accepts a method NAME whose name starts with _store_
+        and ends with _fields (discuss.py _get_fields_method), so the old name
+        could not be reached even if it still existed.
+        """
+        super()._store_attachment_fields(res, **kwargs)
+        res.attr("extension", lambda a: a.get_attachment_extension(a.id))

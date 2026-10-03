@@ -1,5 +1,3 @@
-import {Component} from "@odoo/owl";
-
 export function canPreview(extension) {
     const supported_extensions = [
         "odt",
@@ -56,7 +54,10 @@ export function getUrl(
     return url;
 }
 
+// `env` is a parameter now: Owl 3 removed the static Component.env this used
+// to read, and every caller is a component method with `this.env` to hand.
 export function showPreview(
+    env,
     attachment_id,
     attachment_url,
     attachment_extension,
@@ -65,7 +66,7 @@ export function showPreview(
     attachment_info_list
 ) {
     if (split_screen && attachment_info_list) {
-        Component.env.bus.trigger("open_attachment_preview", {
+        env.bus.trigger("open_attachment_preview", {
             attachment_id,
             attachment_info_list,
         });

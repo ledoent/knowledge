@@ -32,21 +32,33 @@ patch(BinaryField.prototype, {
     },
 
     _renderPreviewButton(extension) {
-        // Add a button same as standard fa-download one.
-        var dl_button = $(this.__owl__.bdom.parentEl).find("button.fa-download");
-        if (dl_button.length !== 1) return;
-        var preview_button = $("<button/>");
-        preview_button.addClass("btn btn-secondary fa fa-external-link");
-        preview_button.attr("data-tooltip", "Preview");
-        preview_button.attr("aria-label", "Preview");
-        preview_button.attr("title");
-        preview_button.attr("data-extension", extension);
-        dl_button.after(preview_button);
-        preview_button.on("click", this._onPreview.bind(this));
+        // Add a button beside the standard download one. 20.0 renders that as
+        // `oi btn btn-link o_download_file_button` with data-icon="download" --
+        // FontAwesome is gone, so the old `button.fa-download` selector matches
+        // nothing. The semantic class is the stable thing to key on.
+        //
+        // Scoped to this component's own DOM where Owl still gives it to us, and
+        // to the document otherwise; the length check then means an ambiguous
+        // page declines to attach rather than decorating another field's button.
+        const root = this.__owl__?.bdom?.parentEl || document;
+        const dl_buttons = root.querySelectorAll("button.o_download_file_button");
+        if (dl_buttons.length !== 1) return;
+        const preview_button = document.createElement("button");
+        // Type=button: created through document.createElement it would otherwise
+        // default to submit, which jQuery's $("<button/>") also did.
+        preview_button.type = "button";
+        preview_button.className = "btn btn-secondary oi";
+        preview_button.setAttribute("data-icon", "open_in_new");
+        preview_button.setAttribute("data-tooltip", "Preview");
+        preview_button.setAttribute("aria-label", "Preview");
+        preview_button.setAttribute("data-extension", extension);
+        dl_buttons[0].after(preview_button);
+        preview_button.addEventListener("click", this._onPreview.bind(this));
     },
 
     _onPreview(event) {
         showPreview(
+            this.env,
             null,
             sprintf(
                 "/web/content?model=%s&field=%s&id=%s",
@@ -54,7 +66,7 @@ patch(BinaryField.prototype, {
                 this.props.name,
                 this.props.record.resId
             ),
-            $(event.currentTarget).attr("data-extension"),
+            event.currentTarget.getAttribute("data-extension"),
             sprintf(_t("Preview %s"), this.fileName),
             false,
             null
