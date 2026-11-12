@@ -1,0 +1,4 @@
+# DO NOT MERGE — temporary pin until document_page_project's 20.0 port lands upstream.
+odoo-addon-document_page_project @ git+https://github.com/ledoent/knowledge.git@20.0-mig-document_page_project#subdirectory=document_page_project
+odoo-addon-document_page @ git+https://github.com/ledoent/knowledge.git@20.0-mig-document_page#subdirectory=document_page
+odoo-addon-document_knowledge @ git+https://github.com/ledoent/knowledge.git@20.0-mig-document_knowledge#subdirectory=document_knowledge
